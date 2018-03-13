@@ -1,11 +1,21 @@
+#!/usr/bin/env python3
+
 from Coach import Coach
-from othello.OthelloGame import OthelloGame as Game
-from othello.pytorch.NNet import NNetWrapper as nn
+from othello.OthelloGame import OthelloGame
+from othello.pytorch.NNet import NNetWrapper as pytorch_othello_neuralnet
+
+from tictactoe.TicTacToeGame import TicTacToeGame
+from tictactoe.keras.NNet import NNetWrapper as keras_tictactoe_neuralnet
+
 from utils import *
 
+# Print linenumbers
+import dprint
+dprint.enable()
+
 args = dotdict({
-    'numIters': 1000,
-    'numEps': 100,
+    'numIters': 100,
+    'numEps': 20,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
@@ -21,8 +31,12 @@ args = dotdict({
 })
 
 if __name__=="__main__":
-    g = Game(6)
-    nnet = nn(g)
+    # g = OthelloGame(6)
+    # nnet = pytorch_othello_neuralnet(g)
+
+    g = TicTacToeGame(6)
+    nnet = keras_tictactoe_neuralnet(g)
+
 
     if args.load_model:
         nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
