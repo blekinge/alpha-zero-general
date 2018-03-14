@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/alpha-zero-general.iml" filepath="$PROJECT_DIR$/.idea/alpha-zero-general.iml" />
+      <module fileurl="file://$PROJECT_DIR$/alpha_zero/alpha_zero.iml" filepath="$PROJECT_DIR$/alpha_zero/alpha_zero.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gobang/gobang.iml" filepath="$PROJECT_DIR$/gobang/gobang.iml" />
+      <module fileurl="file://$PROJECT_DIR$/othello/othello.iml" filepath="$PROJECT_DIR$/othello/othello.iml" />
+      <module fileurl="file://$PROJECT_DIR$/quatro/quatro.iml" filepath="$PROJECT_DIR$/quatro/quatro.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tictactoe/tictactoe.iml" filepath="$PROJECT_DIR$/tictactoe/tictactoe.iml" />
+    </modules>
+  </component>
+</project>
