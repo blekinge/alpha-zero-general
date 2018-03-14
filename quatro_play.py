@@ -12,9 +12,9 @@ from quatro.QuatroPlayers import RandomPlayer, HumanPlayer
 game = QuatroGame(5)
 
 # all players
-random_player1 = RandomPlayer(game).play
-random_player2 = RandomPlayer(game).play
-human_player = HumanPlayer(game).play
+random_player1 = RandomPlayer(game,"random1")
+random_player2 = RandomPlayer(game,"random2")
+human_player = HumanPlayer(game,"human")
 
 # nnet players
 # neural_net = NNet(game)
@@ -27,6 +27,12 @@ args1 = dotdict({'numMCTSSims': 25, 'cpuct':1.0})
 
 if __name__ == '__main__':
 
-    # arena = Arena.Arena(random_player1, human_player, game, display=display)
-    arena = Arena(human_player, random_player2, game, display=display)
-    print(arena.play_games(2, verbose=True))
+    # arena = Arena(random_player1, human_player, game, display=display)
+    arena = Arena(random_player1, random_player2, game, display=display)
+    results = arena.play_games(50, verbose=True)
+    print(results)
+
+    results_format = 'Results (Won,Lost,Draws)={0}'.format(results)
+    print(results_format)
+    print("")
+

@@ -1,5 +1,6 @@
 import numpy as np
 
+from alpha_zero.Player import Player
 from alpha_zero.Board import Board
 from alpha_zero.MCTS import MCTS
 from tictactoe.tictactoe_keras.NNet import NNetWrapper as KerasNNet
@@ -14,8 +15,9 @@ Date: Jan 5, 2018.
 Based on the OthelloPlayers by Surag Nair.
 
 """
-class RandomPlayer():
-    def __init__(self, game):
+class RandomPlayer(Player):
+    def __init__(self, game, name):
+        super().__init__(name)
         self.game = game
 
     def play(self, board):
@@ -26,8 +28,9 @@ class RandomPlayer():
         return a
 
 
-class HumanPlayer():
-    def __init__(self, game):
+class HumanPlayer(Player):
+    def __init__(self, game, name):
+        super().__init__(name)
         self.game = game
 
 
@@ -55,9 +58,10 @@ class HumanPlayer():
 
         return a
 
-class KerasNeuralNetPlayer():
-    def __init__(self, game, args1) -> None:
+class KerasNeuralNetPlayer(Player):
+    def __init__(self, game, args1, name) -> None:
         # nnet players
+        super().__init__(name)
         self.game = game
         neural_net_1 = KerasNNet(game)
         self.mcts1 = MCTS(game, neural_net_1, args1)

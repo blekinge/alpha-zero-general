@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 
+from ..QuatroGame import QuatroGame
 from alpha_zero.NeuralNet import NeuralNet
 from alpha_zero.utils import dotdict
 from .QuatroNNet import QuatroNNet as onnet
@@ -26,7 +27,7 @@ args = dotdict({
 })
 
 class NNetWrapper(NeuralNet):
-    def __init__(self, game):
+    def __init__(self, game:QuatroGame):
         self.nnet = onnet(game, args)
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()
@@ -39,9 +40,12 @@ class NNetWrapper(NeuralNet):
         input_boards = np.asarray(input_boards)
         target_pis = np.asarray(target_pis)
         target_vs = np.asarray(target_vs)
-        self.nnet.model.fit(x = input_boards, y = [target_pis, target_vs], batch_size = args.batch_size, epochs = args.epochs)
+        self.nnet.model.fit(x = input_boards,
+                            y = [target_pis, target_vs],
+                            batch_size = args.batch_size,
+                            epochs = args.epochs)
 
-    def predict(self, board):
+    def predict(self, board_state:np.array):
         """
         board: np array with board
         """
@@ -49,10 +53,10 @@ class NNetWrapper(NeuralNet):
         start = time.time()
 
         # preparing input
-        board = board[np.newaxis, :, :]
+        board_state = board_state[np.newaxis, :, :]
 
         # run
-        pi, v = self.nnet.model.predict(board)
+        pi, v = self.nnet.model.predict(board_state)
 
         #print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return pi[0], v[0]

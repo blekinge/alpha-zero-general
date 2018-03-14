@@ -1,5 +1,6 @@
 from typing import Tuple, List
 
+from alpha_zero.Player import Player
 from alpha_zero.Board import Board
 
 

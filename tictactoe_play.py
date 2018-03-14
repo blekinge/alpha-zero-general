@@ -15,14 +15,14 @@ any agent.
 game = TicTacToeGame(3)
 
 # all players
-random_player1 = RandomPlayer(game).play
-random_player2 = RandomPlayer(game).play
-human_player = HumanPlayer(game).play
+random_player1 = RandomPlayer(game, "Random1")
+random_player2 = RandomPlayer(game, "Random1")
+human_player = HumanPlayer(game, "Human")
 args1 = dotdict({'numMCTSSims': 25, 'cpuct': 1.0})
 
-neural_net_player1 = KerasNeuralNetPlayer(game,args1).play
+neural_net_player1 = KerasNeuralNetPlayer(game,args1, "Neural_1")
 
-neural_net_player2 = KerasNeuralNetPlayer(game,args1).play
+neural_net_player2 = KerasNeuralNetPlayer(game,args1, "Neural_1")
 
 
 if __name__ == '__main__':

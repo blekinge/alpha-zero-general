@@ -1,5 +1,6 @@
 from collections import deque
 
+from alpha_zero.Player import Player
 from pytorch_classification.utils import AverageMeter
 from pytorch_classification.utils.progress.progress.bar import Bar
 
@@ -145,10 +146,16 @@ class Coach():
 
 
             print('PITTING AGAINST PREVIOUS VERSION')
-            arena = Arena(lambda board: np.argmax(pmcts.getActionProb(board, temperature=0)),
-                          lambda board: np.argmax(nmcts.getActionProb(board, temperature=0)), self.game)
+            player1=Player("PREVIOUS")
+            player1.play = lambda board: np.argmax(pmcts.getActionProb(board, temperature=0))
+
+            player2=Player("NEW")
+            player2.play = lambda board: np.argmax(nmcts.getActionProb(board, temperature=0))
+
+            arena = Arena(player1, player2, self.game)
             pwins, nwins, draws = arena.play_games(self.arenaCompare)
 
+            print("")
             print(f'NEW/PREV WINS : {nwins} / {pwins} ; DRAWS : {draws}')
             print("")
 

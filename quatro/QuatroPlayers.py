@@ -1,5 +1,9 @@
+from typing import Tuple
+
 import numpy as np
 
+from .QuatroGame import QuatroGame
+from alpha_zero.Player import Player
 from alpha_zero.MCTS import MCTS
 from .QuatroBoard import QuatroBoard
 from .quatro_keras.NNet import NNetWrapper as KerasNNet
@@ -14,22 +18,40 @@ Date: Jan 5, 2018.
 Based on the OthelloPlayers by Surag Nair.
 
 """
-class RandomPlayer():
-    def __init__(self, game):
+class RandomPlayer(Player):
+    def __init__(self, game: QuatroGame, name:str):
+        super().__init__(name)
         self.game = game
 
-    def play(self, board: QuatroBoard):
+    def play(self, board_state: np.array):
+        board = QuatroBoard(self.game.n,board_state=board_state)
         a = np.random.randint(self.game.getActionSize())
-        valids = self.game.getValidMoves(board, 1)
+        valids = self.game.getValidMoves(board_state, 1)
         while valids[a]!=1:
             a = np.random.randint(self.game.getActionSize())
 
-        print(f"Taking action {a} = "+ self.game.prettyprint_action(a))
+        display_action=human_decode(self.game, a)
+        print(f"{self.name} place {(board.selected_piece & self.game.property_mask):04b} in '{display_action[1]} {display_action[0]}' and gives you {display_action[2]:04b}")
+
         return a
 
 
-class HumanPlayer():
-    def __init__(self, game):
+def human_decode(game: QuatroGame, encoded_action: int)->Tuple[int,chr,str]:
+    mid = (game.n - 1) / 2
+
+    x,y,p = game.decodeAction(encoded_action)
+    if x >= mid:
+        x -= 1
+    if y >= mid:
+        y -= 1
+    y = chr(ord('a') + y)
+    return x,y,p & game.property_mask
+
+
+
+class HumanPlayer(Player):
+    def __init__(self, game: QuatroGame, name:str):
+        super().__init__(name)
         self.game = game
 
     def play(self, board: QuatroBoard):
@@ -41,7 +63,7 @@ class HumanPlayer():
             a = input("letter number piece: ")
             # Python 2.x
             # a = raw_input()
-
+            a = a.strip()
             coordinates = a.split(' ')
 
             x = ord(coordinates[0])-ord('a')
@@ -66,10 +88,10 @@ class HumanPlayer():
 
 
 
-class KerasNeuralNetPlayer():
-    def __init__(self, game, args1) -> None:
+class KerasNeuralNetPlayer(Player):
+    def __init__(self, game: QuatroGame, args1, name:str) -> None:
         # nnet players
-        self.game = game
+        super().__init__(name)
         neural_net_1 = KerasNNet(game)
         self.mcts1 = MCTS(game, neural_net_1, args1)
         # n1.load_checkpoint('./pretrained_models/tictactoe/keras/','best-25eps-25sim-10epch.pth.tar')

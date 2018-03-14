@@ -1,6 +1,7 @@
 import time
 from typing import Callable, Tuple
 
+from alpha_zero.Player import Player
 from alpha_zero.Board import Board
 from alpha_zero.Game import Game
 from pytorch_classification.utils import AverageMeter
@@ -13,8 +14,8 @@ class Arena():
     """
 
     def __init__(self,
-                 player1: Callable[[Board], int],
-                 player2: Callable[[Board], int],
+                 player1: Player,
+                 player2: Player,
                  game: Game,
                  display: Callable[[Board], None] = None):
         """
@@ -55,14 +56,15 @@ class Arena():
 
             if verbose:
                 assert (self.display)
-                print("Turn ", str(it), "Player ", str(curPlayer))
+                print("")
+                print("Turn ", str(it), "Player ", players[curPlayer+1].name)
                 self.display(board)
 
             canonical_board = self.game.getCanonicalForm(board, curPlayer)
 
-            action = players[curPlayer + 1](canonical_board)
+            action = players[curPlayer + 1].play(canonical_board)
 
-            valids = self.game.getValidMoves(canonical_board, 1)
+            valids = self.game.getValidMoves(canonical_board, curPlayer)
 
             if valids[action] == 0:
                 # Invalid action selected...
@@ -71,12 +73,13 @@ class Arena():
 
             board, curPlayer = self.game.getNextState(board, curPlayer, action)
 
+        ended = self.game.getGameEnded(board, 1)
         if verbose:
             assert (self.display)
-            print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))
+            print("Game over: Turn ", str(it), "Result ", str(ended))
             self.display(board)
 
-        return self.game.getGameEnded(board, 1)
+        return ended
 
     def play_games(self, number_games:int, verbose:bool=False) -> Tuple[int, int, int]:
         """
@@ -101,11 +104,16 @@ class Arena():
         number_games = int(number_games / 2)
 
         draws_first, end, eps, oneWon_first, twoWon_first = self._play_games(bar, end, eps, eps_time, maxeps, number_games, verbose)
+        print("")
+        print(f"Player {self.player1.name} won {oneWon_first} times and lost {twoWon_first} against {self.player2.name}")
 
         # Switch the players
         self.player1, self.player2 = self.player2, self.player1
 
         draws_second, end, eps, oneWon_second, twoWon_second = self._play_games(bar, end, eps, eps_time, maxeps, number_games, verbose)
+        print("")
+        print(
+            f"Player {self.player1.name} won {oneWon_second} times and lost {twoWon_second} against {self.player2.name}")
 
         # Switch the players back
         self.player1, self.player2 = self.player2, self.player1
@@ -149,10 +157,14 @@ class Arena():
             eps_time.update(time.time() - end)
             end = time.time()
 
-            bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(eps=eps + 1,
-                                                                                                       maxeps=maxeps,
-                                                                                                       et=eps_time.avg,
-                                                                                                       total=bar.elapsed_td,
-                                                                                                       eta=bar.eta_td)
+            bar.suffix = '({eps}/{maxeps}) ({won}/{loss}/{draw}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
+                eps=eps + 1,
+                maxeps=maxeps,
+                won=oneWon,
+                loss=twoWon,
+                draw=draws,
+                et=eps_time.avg,
+                total=bar.elapsed_td,
+                eta=bar.eta_td)
             bar.next()
         return draws, end, eps, oneWon, twoWon

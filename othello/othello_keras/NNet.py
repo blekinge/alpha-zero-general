@@ -6,6 +6,10 @@ import random
 import numpy as np
 import math
 import sys
+
+from alpha_zero.NeuralNet import NeuralNet
+from alpha_zero.utils import dotdict
+
 sys.path.append('..')
 
 

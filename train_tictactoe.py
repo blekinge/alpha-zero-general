@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+import pathlib
+
 from alpha_zero.Coach import Coach
 from alpha_zero.utils import dotdict
-from quatro.QuatroGame import QuatroGame
 
+from tictactoe.TicTacToeGame import TicTacToeGame
+from tictactoe.tictactoe_keras.NNet import NNetWrapper as keras_tictactoe_neuralnet
 
-from quatro.quatro_keras.NNet import NNetWrapper as keras_neuralnet
 
 # Print linenumbers
 # from alpha_zero import dprint
@@ -35,20 +37,18 @@ loadSaveArgs = {'checkpoint': './checkpoints/tictactoe/keras/' + args_to_filenam
 
 args = dotdict({**model_params,**loadSaveArgs})
 
+if __name__ == "__main__":
 
-if __name__=="__main__":
-    # g = OthelloGame(6)
-    # nnet = pytorch_othello_neuralnet(g)
+    game = TicTacToeGame(3)
+    nnet = keras_tictactoe_neuralnet(game)
+    c = Coach(game, nnet, args)
 
-    game = QuatroGame(5)
-    nnet = keras_neuralnet(game)
-
-
+    pathlib.Path(args.checkpoint).mkdir(parents=True, exist_ok=True)
     if args.load_model:
+        pathlib.Path(args.load_folder_file[0]).mkdir(parents=True, exist_ok=True)
+
         nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
-    c = Coach(game, nnet, args)
-    if args.load_model:
         print("Load trainExamples from file")
         c.loadTrainExamples()
     c.learn()

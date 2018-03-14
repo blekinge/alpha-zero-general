@@ -3,6 +3,7 @@ from __future__ import print_function
 import sys
 from typing import Tuple, List
 
+from alpha_zero.Player import Player
 from alpha_zero.Game import Game
 
 sys.path.append('..')
@@ -28,12 +29,12 @@ class QuatroGame(Game):
         self.n = n
 
 
-    def getInitBoard(self) -> QuatroBoard:
+    def getInitBoard(self) -> np.array:
         # return initial board (numpy board)
         b = QuatroBoard(self.n)
         self.property_mask = b.property_mask
         self.is_set_mask = b.is_set_mask
-        return b
+        return b.state
 
     def getBoardSize(self) -> Tuple[int, int]:
         # (a,b) tuple
@@ -44,7 +45,7 @@ class QuatroGame(Game):
         # TODO in terms of n
         return (1 << (2 + 2 + self.n-1)) + 1
 
-    def getNextState(self, board: QuatroBoard, player: int, action: int) -> Tuple[QuatroBoard, int]:
+    def getNextState(self, board_state: np.array, player: int, action: int) -> Tuple[np.array, int]:
         """
         if player takes action on board, return next (board_state,player)
         :param board_state: current board state
@@ -54,65 +55,70 @@ class QuatroGame(Game):
         :return nextBoard: board_state after applying action
         :return nextPlayer: player who plays in the next turn (should be -player)
         """
-        # board = Board(self.n, np.copy(board_state))
+        board = QuatroBoard(self.n, np.copy(board_state))
+        #
+        # if action == self.getActionSize()-1 :
+        #     # Means no pieces left, so just place the last piece
+        #     piece = board.selected_piece
+        #     x,y = board.empty_tiles[0]
+        # else:
+        x, y, piece = self.decodeAction(action)
 
-        if action == self.getActionSize()-1 :
-            # Means no pieces left, so just place the last piece
-            piece = board.selected_piece
-            x,y = board.empty_tiles[0]
+        if len(board.remaining_pieces)==0 and len(board.empty_tiles)==1:
+            pass
+            # print("Placing last piece")
         else:
-            x, y, piece = self.decodeAction(action)
-
             if piece in board.used_pieces or piece == board.selected_piece:
                 print("invalid state")
                 # Invalid, so your turn again
-                return board, player
+                return board_state, player
 
         # Perform the move
         board.execute_move((x,y,piece), player)
 
         # Next turn
-        return board, -player
+        return board.state, -player
 
 
     # This returns array of the actions that are fed into getNextState
-    def getValidMoves(self, board: QuatroBoard, player: int):
+    def getValidMoves(self, board_state: np.array, player: int):
         # return a fixed size binary vector
         valids = [0] * self.getActionSize()
 
-        # board = Board(n=self.n, board_state=board_state)
+        board = QuatroBoard(n=self.n, board_state=board_state)
 
         legalMoves = board.get_legal_moves(player)
 
         # Means place last piece and end
         if len(legalMoves) == 0:
-            valids[-1] = 1
+            x,y = board.empty_tiles[0]
+            p = board.selected_piece
+            valids[self.encodeAction((x, y, p))] = 1
             return np.array(valids)
 
         for x, y, p in legalMoves:
-            move = (x,y,p)
-            action = self.encodeAction(move)
+            action = self.encodeAction((x, y, p))
             valids[action] = 1
         return valids
 
 
-    def getGameEnded(self, board: QuatroBoard, player: int) -> int:
+    def getGameEnded(self, board_state: np.array, player: int) -> int:
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
-        # board = Board(self.n, board_state)
+        board = QuatroBoard(self.n, board_state)
 
         if board.is_win(player):
-            return 1
+            return player
         if board.has_legal_moves():
             return 0
         # draw has a very little value 
         return 1e-4
 
-    def getCanonicalForm(self, board: QuatroBoard, player: int):
+    def getCanonicalForm(self, board_state: np.array, player: int):
         # return state if player==1, else return -state if player==-1
-        return board
+        return board_state
 
-    def getSymmetries(self, board: QuatroBoard, pi: List[float]):
+    def getSymmetries(self, board_state: np.array, pi: List[float]):
         # mirror, rotational
         assert (len(pi) == self.getActionSize())  # 1 for pass
         pi_board = np.reshape(pi[:-1], ((self.n-1) ** 2, (self.n-1) ** 2))
@@ -120,7 +126,7 @@ class QuatroGame(Game):
 
         for i in range(1, 5):
             for j in [True, False]:
-                newB = np.rot90(board.state, i)
+                newB = np.rot90(board_state, i)
                 newPi = np.rot90(pi_board, i)
                 if+ j:
                     newB = np.fliplr(newB)
@@ -128,8 +134,8 @@ class QuatroGame(Game):
                 l += [(newB, list(newPi.ravel()) + [pi[-1]])]
         return l
 
-    def stringRepresentation(self, board: QuatroBoard):
-        return board.state.tostring()+board.selected_piece
+    def stringRepresentation(self, board_state: np.array):
+        return board_state.tostring()
 
     def encodeAction(self, action: Tuple[int, int, int]) -> int:
         x, y, p = action
@@ -153,7 +159,3 @@ class QuatroGame(Game):
         piece = (encoded_action & self.property_mask) + self.is_set_mask
 
         return x, y, piece
-
-    def prettyprint_action(self, encoded_action: int):
-        x,y,p = self.decodeAction(encoded_action)
-        return f"({x},{y},"+'{0:04b}'.format(p & self.property_mask)+")"
