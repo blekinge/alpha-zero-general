@@ -3,13 +3,12 @@ from __future__ import print_function
 import sys
 from typing import Tuple, List
 
-sys.path.append('..')
-from Game import Game
-from .QuatroBoard import Board
-import numpy as np
-import copy
+from alpha_zero.Game import Game
 
-from colorama import Fore, Back, Style
+sys.path.append('..')
+from .QuatroBoard import QuatroBoard
+import numpy as np
+
 from colorama import init
 init()
 
@@ -25,13 +24,13 @@ Based on the OthelloGame by Surag Nair.
 
 class QuatroGame(Game):
 
-    def __init__(self, n:int=4):
+    def __init__(self, n:int=5):
         self.n = n
 
 
-    def getInitBoard(self) -> Board:
+    def getInitBoard(self) -> QuatroBoard:
         # return initial board (numpy board)
-        b = Board(self.n)
+        b = QuatroBoard(self.n)
         self.property_mask = b.property_mask
         self.is_set_mask = b.is_set_mask
         return b
@@ -43,9 +42,9 @@ class QuatroGame(Game):
     def getActionSize(self) -> int:
         # return number of actions
         # TODO in terms of n
-        return (1 << (2 + 2 + self.n)) + 1
+        return (1 << (2 + 2 + self.n-1)) + 1
 
-    def getNextState(self, board: Board, player: int, action: int) -> Tuple[Board, int]:
+    def getNextState(self, board: QuatroBoard, player: int, action: int) -> Tuple[QuatroBoard, int]:
         """
         if player takes action on board, return next (board_state,player)
         :param board_state: current board state
@@ -77,7 +76,7 @@ class QuatroGame(Game):
 
 
     # This returns array of the actions that are fed into getNextState
-    def getValidMoves(self, board: Board, player: int):
+    def getValidMoves(self, board: QuatroBoard, player: int):
         # return a fixed size binary vector
         valids = [0] * self.getActionSize()
 
@@ -94,10 +93,10 @@ class QuatroGame(Game):
             move = (x,y,p)
             action = self.encodeAction(move)
             valids[action] = 1
-        return np.array(valids)
+        return valids
 
 
-    def getGameEnded(self, board: Board, player: int) -> int:
+    def getGameEnded(self, board: QuatroBoard, player: int) -> int:
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         # board = Board(self.n, board_state)
@@ -109,44 +108,48 @@ class QuatroGame(Game):
         # draw has a very little value 
         return 1e-4
 
-    def getCanonicalForm(self, board: Board, player: int):
+    def getCanonicalForm(self, board: QuatroBoard, player: int):
         # return state if player==1, else return -state if player==-1
         return board
 
-    def getSymmetries(self, board: Board, pi: List[float]):
-        return [board]
-        # # mirror, rotational
-        # assert (len(pi) == self.getActionSize())  # 1 for pass
-        # pi_board = np.reshape(pi[:-1], (self.n ** 2, self.n ** 2))
-        # l = []
-        #
-        # for i in range(1, 5):
-        #     for j in [True, False]:
-        #         newB = np.rot90(board.state, i)
-        #         newPi = np.rot90(pi_board, i)
-        #         if j:
-        #             newB = np.fliplr(newB)
-        #             newPi = np.fliplr(newPi)
-        #         l += [(newB, list(newPi.ravel()) + [pi[-1]])]
-        # return l
+    def getSymmetries(self, board: QuatroBoard, pi: List[float]):
+        # mirror, rotational
+        assert (len(pi) == self.getActionSize())  # 1 for pass
+        pi_board = np.reshape(pi[:-1], ((self.n-1) ** 2, (self.n-1) ** 2))
+        l = []
 
-    def stringRepresentation(self, board: Board):
-        # 8x8 numpy array (canonical board)
-        return board.state.tostring()
+        for i in range(1, 5):
+            for j in [True, False]:
+                newB = np.rot90(board.state, i)
+                newPi = np.rot90(pi_board, i)
+                if+ j:
+                    newB = np.fliplr(newB)
+                    newPi = np.fliplr(newPi)
+                l += [(newB, list(newPi.ravel()) + [pi[-1]])]
+        return l
+
+    def stringRepresentation(self, board: QuatroBoard):
+        return board.state.tostring()+board.selected_piece
 
     def encodeAction(self, action: Tuple[int, int, int]) -> int:
         x, y, p = action
         # x,y is 0-3, so 2 bits.
         # p is 5 bits
         # p = p - 0b10000
-        n_x = (x & 0b11) << (self.n + 2)
-        n_y = (y & 0b11) << (self.n)
+        if x > 1: x -= 1
+        if y > 1: y -= 1
+
+        n_x = (x & 0b11) << (self.n-1 + 2)
+        n_y = (y & 0b11) << (self.n-1)
         return n_x + n_y + (p & self.property_mask)
 
     def decodeAction(self, encoded_action: int) -> Tuple[int, int, int]:
 
-        x = (encoded_action >> (self.n + 2)) & 0b11
-        y = (encoded_action >> (self.n)) & 0b11
+
+        x = (encoded_action >> (self.n-1 + 2)) & 0b11
+        if x > 1: x +=1
+        y = (encoded_action >> (self.n-1)) & 0b11
+        if y > 1: y += 1
         piece = (encoded_action & self.property_mask) + self.is_set_mask
 
         return x, y, piece

@@ -18,11 +18,12 @@ Based on the board for the game of Othello by Eric P. Nichols.
 
 '''
 
-
 # from bkcharts.attributes import color
-from typing import List, Tuple, Set
+from typing import List, Tuple
 
 import numpy as np
+
+from alpha_zero.Board import Board
 
 
 def allset(values: List[int]):
@@ -31,30 +32,29 @@ def allset(values: List[int]):
     return product > 0
 
 
-
-class Board():
+class QuatroBoard(Board):
     # list of all 8 directions on the board, as (x,y) offsets
     __directions = [(1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1)]
 
-    def __init__(self, n=4):
+    def __init__(self, n=5):
         "Set up initial board configuration."
 
         self.n = n
 
         # 0b10000
-        self.is_set_mask = 1 << (self.n)
+        self.is_set_mask = 1 << (self.n-1)
 
         # 0b01111
-        self.property_mask = (1 << self.n) - 1
+        self.property_mask = (1 << (self.n-1)) - 1
 
         # Create the empty board array (n x n) + 1. The last field is the selected piece
-        tiles = [None] * (self.n+1)
-        for i in range(self.n+1):
-            tiles[i] = [0] * (self.n+1)
+        tiles = [None] * (self.n)
+        for i in range(self.n):
+            tiles[i] = [0] * (self.n)
         self._tiles = np.array(tiles, dtype=int)
 
         # Select the first piece per default
-        self.selected_piece = 0+self.is_set_mask
+        self.selected_piece = 0 + self.is_set_mask
 
 
     @property
@@ -65,32 +65,34 @@ class Board():
     def __getitem__(self, index) -> List[int]:
         return self._tiles[index]
 
-    # @property
-    # def selected_piece(self) -> int:
-    #     return self[self.n][self.n]
-    #
-    # @selected_piece.setter
-    # def selected_piece(self, piece: int) -> None:
-    #     self[self.n][self.n] = piece
+    @property
+    def selected_piece(self) -> int:
+        return self[2][2]
+
+    @selected_piece.setter
+    def selected_piece(self, piece: int) -> None:
+        self[2][2] = piece
 
     @property
     def used_pieces(self):
-        used_pieces = [self[x][y] for x in range(self.n) for y in range(self.n) if self[x][y] != 0]
+        used_pieces = [self[x][y] for x in range(self.n) for y in range(self.n) if self[x][y] != 0 and x != 2 and y != 2]
         used_pieces.append(self.selected_piece)
         return used_pieces
 
     @property
     def remaining_pieces(self):
         used_pieces = self.used_pieces
-        remaining_pieces = [p for p in range(self.is_set_mask, self.n * self.n+self.is_set_mask) if p not in used_pieces]
+        remaining_pieces = [p
+                            for p in range(self.is_set_mask, (self.n-1) * (self.n-1) + self.is_set_mask)
+                            if p not in used_pieces]
         return remaining_pieces
 
     @property
-    def empty_tiles(self) -> List[Tuple[int,int]]:
-        empty_tiles = [(x, y) for x in range(self.n) for y in range(self.n) if self[x][y] == 0]
+    def empty_tiles(self) -> List[Tuple[int, int]]:
+        empty_tiles = [(x, y) for x in range(self.n) for y in range(self.n) if self[x][y] == 0 and x != 2 and y != 2]
         return empty_tiles
 
-    def get_legal_moves(self, color: int) -> List[Tuple[int,int,int]]:
+    def get_legal_moves(self, color: int) -> List[Tuple[int, int, int]]:
         """Returns all the legal moves for the given color.
         A move consist of placing the selected piece and selecting a new piece for your opponent
 
@@ -108,38 +110,42 @@ class Board():
 
     def has_legal_moves(self):
         for y in range(self.n):
+            if y == 2: continue
             for x in range(self.n):
+                if x == 2: continue
                 if self[x][y] == 0:
                     return True
         return False
 
-    def is_win(self, player:int):
+    def is_win(self, player: int):
         """Check whether the given player has collected a Quadlet in any direction;
         @param player (1=white,-1=black)
         """
 
         for y in range(self.n):
-            y_strip = self[:,y]
+            if y == 2: continue
+            y_strip = self[:, y]
+
             if self.check_strip(y_strip):
                 return True
 
         for x in range(self.n):
+            if x == 2: continue
             x_strip = self[x, :]
             if self.check_strip(x_strip):
                 return True
 
-
-        d1_strip=[self[d][d] for d in range(self.n)]
+        d1_strip = [self[d][d] for d in range(self.n) if d != 2]
         if self.check_strip(d1_strip):
             return True
 
-        d2_strip=[self[d][-d] for d in range(self.n)]
+        d2_strip = [self[d][-d] for d in range(self.n) if d != 2]
         if self.check_strip(d2_strip):
             return True
 
         return False
 
-    def execute_move(self, move: Tuple[int,int,int], player:int):
+    def execute_move(self, move: Tuple[int, int, int], player: int):
         """Perform the given move on the board; 
         """
 
@@ -148,9 +154,11 @@ class Board():
         # Add the piece to the empty square.
         assert self[x][y] == 0
         assert p > 0
+        assert x != 2
+        assert y != 2
 
         # print(f"Placing {(self.selected_piece & 0b1111):04b} at {x},{y}")
-        self[x][y] = self.selected_piece #+(1<<self.n)
+        self[x][y] = self.selected_piece  # +(1<<self.n)
 
         self.selected_piece = p
         # print(f"Selecting {(self.selected_piece & 0b1111):04b} for opponent\n")
@@ -188,5 +196,3 @@ class Board():
                 break
         # If there is still overlap after we went through the strip, we have a winner
         return count > 0
-
-

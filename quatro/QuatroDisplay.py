@@ -1,12 +1,9 @@
-from typing import List
-
-import numpy as np
 from colorama import Fore, Style
 
-from quatro.QuatroBoard import Board
+from quatro.QuatroBoard import QuatroBoard
 
 
-def display(board: Board):
+def display(board: QuatroBoard):
 
     # board = Board(board_state=board_state)
 
@@ -32,54 +29,68 @@ def display(board: Board):
     print("")
 
     print("   ", end=" ")
+    mid = (n - 1) / 2
     for y in range(n):
-        print(y, " ", end="")
+        if y == mid: continue
+        if y < mid:
+            print(chr(ord('a') + y)," ", end="")
+        else:
+            print(chr(ord('a') + y-1), " ", end="")
+        # print(y, " ", end="")
     print("")
 
     print("  ", end="")
-    for _ in range(n):
+    for y in range(n):
+        if y == mid: continue
         print("--", end="-")
     print("-")
 
     #
 
-    for y in range(n):
-
-        print(y, "|", end="")  # print the row #
-        for x in range(n):
+    for x in range(n):
+        if x == mid: continue
+        if x < mid:
+            print(x, "|", end="")  # print the row #
+        else:
+            print(x-1, "|", end="")  # print the row #
+        for y in range(n):
+            if y == mid: continue
             piece = board[x][y]  # get the piece to print
             if piece != 0:
                 print('{0:01b}'.format(bit(piece, 3)), end="")
                 print('{0:01b}'.format(bit(piece, 2)), end="")
             else:
                 print("  ", end="")
-            if x != n-1:
+            if y != n-1:
                 print("|", end="")
         print("|")
 
         print("  |", end="")
-        for x in range(n):
+        for y in range(n):
+            if y == mid: continue
             piece = board[x][y]  # get the piece to print
             if piece != 0:
                 print('{0:01b}'.format(bit(piece,1)), end="")
                 print('{0:01b}'.format(bit(piece,0)), end="")
             else:
                 print("  ", end="")
-            if x != n-1:
+            if y != n-1:
                 print("|", end="")
         print("|")
 
-        if y != n-1:
+        if x != n-1:
             print("  |", end="")
-            for x in range(n):
-                if x != n-1:
+            for y in range(n):
+                if y == mid: continue
+                if y != n-1:
                     print("---", end="")
                 else:
                     print("--|")
 
 
     print("  ", end="")
-    for _ in range(n):
+    for y in range(n):
+        if y == mid: continue
         print("--", end="-")
     print("-")
     print(list(map(lambda piece: '{0:04b}'.format(piece & 0b1111),board.remaining_pieces)))
