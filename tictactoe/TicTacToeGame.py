@@ -1,8 +1,9 @@
 from __future__ import print_function
-import sys
-sys.path.append('..')
-from Game import Game
-from .TicTacToeLogic import Board
+
+
+from alpha_zero.Game import Game
+from tictactoe.TicTacToeBoard import TicTacToeBoard as Board
+
 import numpy as np
 
 """
@@ -94,31 +95,3 @@ class TicTacToeGame(Game):
         # 8x8 numpy array (canonical board)
         return board.tostring()
 
-def display(board):
-    n = board.shape[0]
-
-    print("   ", end="")
-    for y in range(n):
-        print (y,"", end="")
-    print("")
-    print("  ", end="")
-    for _ in range(n):
-        print ("-", end="-")
-    print("--")
-    for y in range(n):
-        print(y, "|",end="")    # print the row #
-        for x in range(n):
-            piece = board[y][x]    # get the piece to print
-            if piece == -1: print("X ",end="")
-            elif piece == 1: print("O ",end="")
-            else:
-                if x==n:
-                    print("-",end="")
-                else:
-                    print("- ",end="")
-        print("|")
-
-    print("  ", end="")
-    for _ in range(n):
-        print ("-", end="-")
-    print("--")

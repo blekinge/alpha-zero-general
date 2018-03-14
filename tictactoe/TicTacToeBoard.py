@@ -15,7 +15,10 @@ Based on the board for the game of Othello by Eric P. Nichols.
 
 '''
 # from bkcharts.attributes import color
-class Board():
+from alpha_zero.Board import Board
+
+
+class TicTacToeBoard(Board):
 
     # list of all 8 directions on the board, as (x,y) offsets
     __directions = [(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1)]

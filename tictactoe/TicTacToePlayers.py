@@ -1,5 +1,10 @@
 import numpy as np
 
+from alpha_zero.Board import Board
+from alpha_zero.MCTS import MCTS
+from tictactoe.tictactoe_keras.NNet import NNetWrapper as KerasNNet
+
+
 """
 Random and Human-ineracting players for the game of TicTacToe.
 
@@ -21,23 +26,27 @@ class RandomPlayer():
         return a
 
 
-class HumanTicTacToePlayer():
+class HumanPlayer():
     def __init__(self, game):
         self.game = game
+
 
     def play(self, board):
         # display(board)
         valid = self.game.getValidMoves(board, 1)
-        for i in range(len(valid)):
-            if valid[i]:
-                print(int(i/self.game.n), int(i%self.game.n))
-        while True: 
+        # for i in range(len(valid)):
+        #     if valid[i]:
+        #         print(int(i/self.game.n), int(i%self.game.n))
+        while True:
+            print("Make your move!")
             # Python 3.x
-            a = input()
+            a = input("letter number: ")
             # Python 2.x 
             # a = raw_input()
-
-            x,y = [int(x) for x in a.split(' ')]
+            coordinates = a.split(' ')
+            x = ord(coordinates[0])-ord('a')
+            y = int(coordinates[1])
+            # x,y = [int(x) for x in a.split(' ')]
             a = self.game.n * x + y if x!= -1 else self.game.n ** 2
             if valid[a]:
                 break
@@ -45,3 +54,14 @@ class HumanTicTacToePlayer():
                 print('Invalid')
 
         return a
+
+class KerasNeuralNetPlayer():
+    def __init__(self, game, args1) -> None:
+        # nnet players
+        self.game = game
+        neural_net_1 = KerasNNet(game)
+        self.mcts1 = MCTS(game, neural_net_1, args1)
+        # n1.load_checkpoint('./pretrained_models/tictactoe/keras/','best-25eps-25sim-10epch.pth.tar')
+
+    def play(self, board: Board):
+        return np.argmax(self.mcts1.getActionProb(board, temperature=0))
