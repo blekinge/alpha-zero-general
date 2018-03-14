@@ -1,11 +1,10 @@
-import sys
-sys.path.append('..')
-from utils import *
+from keras.optimizers import Adam
 
-import argparse
-from keras.models import *
-from keras.layers import *
-from keras.optimizers import *
+from keras import Model, Input
+from keras.layers import Activation, BatchNormalization, Conv2D, Dense, Dropout, Flatten, Reshape
+
+from alpha_zero.Game import Game
+
 
 """
 NeuralNet for the game of TicTacToe.
@@ -16,7 +15,7 @@ Date: Jan 5, 2018.
 Based on the OthelloNNet by SourKream and Surag Nair.
 """
 class QuatroNNet():
-    def __init__(self, game, args):
+    def __init__(self, game: Game, args):
         # game params
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()

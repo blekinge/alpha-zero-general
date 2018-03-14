@@ -1,21 +1,15 @@
-import Arena
-from MCTS import MCTS
-from quatro.QuatroDisplay import display
-from quatro.QuatroGame import QuatroGame as Game
-from quatro.QuatroPlayers import HumanQuatroPlayer as HumanPlayer, RandomPlayer
-from quatro.keras.NNet import NNetWrapper as NNet
-
-import numpy as np
-from utils import *
-
 
 """
 use this script to play any two agents against each other, or play manually with
 any agent.
 """
+from alpha_zero.Arena import Arena
+from alpha_zero.utils import dotdict
+from quatro.QuatroDisplay import display
+from quatro.QuatroGame import QuatroGame
+from quatro.QuatroPlayers import RandomPlayer, HumanPlayer
 
-
-game = Game(4)
+game = QuatroGame(5)
 
 # all players
 random_player1 = RandomPlayer(game).play
@@ -34,5 +28,5 @@ args1 = dotdict({'numMCTSSims': 25, 'cpuct':1.0})
 if __name__ == '__main__':
 
     # arena = Arena.Arena(random_player1, human_player, game, display=display)
-    arena = Arena.Arena(random_player1, random_player2, game, display=display)
-    print(arena.playGames(2, verbose=True))
+    arena = Arena(human_player, random_player2, game, display=display)
+    print(arena.play_games(2, verbose=True))

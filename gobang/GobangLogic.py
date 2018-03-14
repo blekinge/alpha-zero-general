@@ -10,7 +10,10 @@ Board data:
 Squares are stored and manipulated as (x,y) tuples.
 x is the column, y is the row.
 '''
-class Board():
+from alpha_zero.Board import Board
+
+
+class GobangBoard(Board):
     def __init__(self, n):
         "Set up initial board configuration."
         self.n = n

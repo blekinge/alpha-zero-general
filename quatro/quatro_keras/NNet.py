@@ -1,16 +1,10 @@
-import argparse
 import os
-import shutil
 import time
-import random
-import numpy as np
-import math
-import sys
-sys.path.append('..')
-from utils import *
-from NeuralNet import NeuralNet
 
-import argparse
+import numpy as np
+
+from alpha_zero.NeuralNet import NeuralNet
+from alpha_zero.utils import dotdict
 from .QuatroNNet import QuatroNNet as onnet
 
 """

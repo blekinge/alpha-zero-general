@@ -1,17 +1,26 @@
-import argparse
 import os
-import shutil
-import time
-import random
-import numpy as np
-import math
 import sys
-sys.path.append('..')
-from utils import *
-from NeuralNet import NeuralNet
+import time
+from typing import List, Tuple
 
-import argparse
-from .OthelloNNet import OthelloNNet as onnet
+import numpy as np
+
+from alpha_zero.Board import Board
+from alpha_zero.NeuralNet import NeuralNet
+from alpha_zero.utils import dotdict
+
+sys.path.append('..')
+
+from .TicTacToeNNet import TicTacToeNNet as onnet
+
+"""
+NeuralNet wrapper class for the TicTacToeNNet.
+
+Author: Evgeny Tyurin, github.com/evg-tyurin
+Date: Jan 5, 2018.
+
+Based on (copy-pasted from) the NNet by SourKream and Surag Nair.
+"""
 
 args = dotdict({
     'lr': 0.001,
@@ -28,7 +37,7 @@ class NNetWrapper(NeuralNet):
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()
 
-    def train(self, examples):
+    def train(self, examples:List[Tuple[Board,List[float],List[int]]]):
         """
         examples: list of examples, each example is of form (board, pi, v)
         """
@@ -36,9 +45,12 @@ class NNetWrapper(NeuralNet):
         input_boards = np.asarray(input_boards)
         target_pis = np.asarray(target_pis)
         target_vs = np.asarray(target_vs)
-        self.nnet.model.fit(x = input_boards, y = [target_pis, target_vs], batch_size = args.batch_size, epochs = args.epochs)
+        self.nnet.model.fit(x = input_boards,
+                            y = [target_pis, target_vs],
+                            batch_size = args.batch_size,
+                            epochs = args.epochs)
 
-    def predict(self, board):
+    def predict(self, board: Board):
         """
         board: np array with board
         """
@@ -55,17 +67,17 @@ class NNetWrapper(NeuralNet):
         return pi[0], v[0]
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
+
         filepath = os.path.join(folder, filename)
         if not os.path.exists(folder):
             print("Checkpoint Directory does not exist! Making directory {}".format(folder))
             os.mkdir(folder)
-        else:
-            print("Checkpoint Directory exists! ")
+        print("Saving checkpoint: "+str(filepath))
         self.nnet.model.save_weights(filepath)
 
     def load_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
         # https://github.com/pytorch/examples/blob/master/imagenet/main.py#L98
         filepath = os.path.join(folder, filename)
         if not os.path.exists(filepath):
-            raise("No model in path {}".format(filepath))
+            raise("No model in path '{}'".format(filepath))
         self.nnet.model.load_weights(filepath)

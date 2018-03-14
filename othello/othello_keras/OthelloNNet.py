@@ -3,9 +3,9 @@ sys.path.append('..')
 from utils import *
 
 import argparse
-from keras.models import *
-from keras.layers import *
-from keras.optimizers import *
+from othello_keras.models import *
+from othello_keras.layers import *
+from othello_keras.optimizers import *
 
 class OthelloNNet():
     def __init__(self, game, args):

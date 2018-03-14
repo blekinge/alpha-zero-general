@@ -1,6 +1,7 @@
 *.pyc
 .DS_Store
 
-/temp/
+/checkpoints/
+/models/
 /.project
 /.pydevproject
