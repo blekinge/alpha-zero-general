@@ -17,11 +17,12 @@ def args_to_filename(args: dict):
     for key, value in args.items():
         filename += f"{value}{key}-"
     return filename
-
+#
+# I trained a Keras model for 3x3 TicTacToe (3 iterations, 25 episodes, 10 epochs per iteration and 25 MCTS simulations per turn). This took about 30 minutes on an i5-4570 without CUDA. The pretrained model (Keras) can be found in
 
 model_params = {
-    'numIters': 100,
-    'numEps': 10,
+    'numIterations': 3,
+    'numEpisodes': 25,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
