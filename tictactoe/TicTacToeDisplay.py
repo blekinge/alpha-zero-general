@@ -1,5 +1,5 @@
-def display(board):
-    n = board.shape[0]
+def display(board_state):
+    n = board_state.shape[0]
 
     print("   ", end="")
     for y in range(n):
@@ -12,7 +12,7 @@ def display(board):
     for x in range(n):
         print(x, "|",end="")    # print the row #
         for y in range(n):
-            piece = board[y][x]    # get the piece to print
+            piece = board_state[y][x]    # get the piece to print
             if piece == -1: print("X ",end="")
             elif piece == 1: print("O ",end="")
             else:
@@ -24,5 +24,5 @@ def display(board):
 
     print("  ", end="")
     for _ in range(n):
-        print ("-", end="-")
+        print("-", end="-")
     print("--")

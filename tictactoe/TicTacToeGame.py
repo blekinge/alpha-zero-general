@@ -22,7 +22,7 @@ class TicTacToeGame(Game):
     def getInitBoard(self):
         # return initial board (numpy board)
         b = Board(self.n)
-        return np.array(b.pieces)
+        return b.pieces
 
     def getBoardSize(self):
         # (a,b) tuple
@@ -37,17 +37,17 @@ class TicTacToeGame(Game):
         # action must be a valid move
         if action == self.n*self.n:
             return (board, -player)
-        b = Board(self.n)
-        b.pieces = np.copy(board)
+        b = Board(self.n, np.copy(board))
+
         move = (int(action/self.n), action%self.n)
         b.execute_move(move, player)
         return (b.pieces, -player)
 
-    def getValidMoves(self, board, player):
+    def getValidMoves(self, board_state, player):
         # return a fixed size binary vector
         valids = [0]*self.getActionSize()
-        b = Board(self.n)
-        b.pieces = np.copy(board)
+        b = Board(self.n, board_state)
+
         legalMoves =  b.get_legal_moves(player)
         if len(legalMoves)==0:
             valids[-1]=1
@@ -56,11 +56,10 @@ class TicTacToeGame(Game):
             valids[self.n*x+y]=1
         return np.array(valids)
 
-    def getGameEnded(self, board, player):
+    def getGameEnded(self, board_state, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
-        b = Board(self.n)
-        b.pieces = np.copy(board)
+        b = Board(self.n, board_state)
 
         if b.is_win(player):
             return 1
@@ -71,11 +70,11 @@ class TicTacToeGame(Game):
         # draw has a very little value 
         return 1e-4
 
-    def getCanonicalForm(self, board, player):
+    def getCanonicalForm(self, board_state, player):
         # return state if player==1, else return -state if player==-1
-        return player*board
+        return player * board_state
 
-    def getSymmetries(self, board, pi):
+    def getSymmetries(self, board_state, pi):
         # mirror, rotational
         assert(len(pi) == self.n**2+1)  # 1 for pass
         pi_board = np.reshape(pi[:-1], (self.n, self.n))
@@ -83,7 +82,7 @@ class TicTacToeGame(Game):
 
         for i in range(1, 5):
             for j in [True, False]:
-                newB = np.rot90(board, i)
+                newB = np.rot90(board_state, i)
                 newPi = np.rot90(pi_board, i)
                 if j:
                     newB = np.fliplr(newB)
@@ -91,7 +90,7 @@ class TicTacToeGame(Game):
                 l += [(newB, list(newPi.ravel()) + [pi[-1]])]
         return l
 
-    def stringRepresentation(self, board):
-        # 8x8 numpy array (canonical board)
-        return board.tostring()
+    def stringRepresentation(self, board_state):
+        # 8x8 numpy array (canonical board_state)
+        return board_state.tostring()
 

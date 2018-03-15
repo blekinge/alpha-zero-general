@@ -15,6 +15,8 @@ Based on the board for the game of Othello by Eric P. Nichols.
 
 '''
 # from bkcharts.attributes import color
+import numpy as np
+
 from alpha_zero.Board import Board
 
 
@@ -23,14 +25,18 @@ class TicTacToeBoard(Board):
     # list of all 8 directions on the board, as (x,y) offsets
     __directions = [(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1)]
 
-    def __init__(self, n=3):
+    def __init__(self, n=3, board_state=None):
         "Set up initial board configuration."
 
         self.n = n
-        # Create the empty board array.
-        self.pieces = [None]*self.n
-        for i in range(self.n):
-            self.pieces[i] = [0]*self.n
+        if board_state is not None:
+            self.pieces = board_state
+        else:
+            # Create the empty board array.
+            pieces = [None]*self.n
+            for i in range(self.n):
+                pieces[i] = [0]*self.n
+            self.pieces = np.array(pieces)
 
     # add [][] indexer syntax to the Board
     def __getitem__(self, index): 
