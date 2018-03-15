@@ -23,11 +23,11 @@ Based on (copy-pasted from) the NNet by SourKream and Surag Nair.
 """
 
 args = dotdict({
-    'lr': 0.001,
+    'learningRate': 0.001,
     'dropout': 0.3,
     'epochs': 10,
     'batch_size': 64,
-    'cuda': False,
+    'cuda': True,
     'num_channels': 512,
 })
 
@@ -50,7 +50,7 @@ class NNetWrapper(NeuralNet):
                             batch_size = args.batch_size,
                             epochs = args.epochs)
 
-    def predict(self, board: Board):
+    def predict(self, board_state: np.array):
         """
         board: np array with board
         """
@@ -58,10 +58,10 @@ class NNetWrapper(NeuralNet):
         start = time.time()
 
         # preparing input
-        board = board[np.newaxis, :, :]
+        board_state = board_state[np.newaxis, :, :]
 
         # run
-        pi, v = self.nnet.model.predict(board)
+        pi, v = self.nnet.model.predict(board_state)
 
         #print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return pi[0], v[0]

@@ -31,9 +31,9 @@ class Coach():
         self.updateThreshold = args.updateThreshold
         self.load_folder_file = args.load_folder_file
         self.checkpoint = args.checkpoint
-        self.numIters = args.numIters
+        self.numIterations = args.numIterations
         self.maxlenOfQueue = args.maxlenOfQueue
-        self.numEps = args.numEps
+        self.numEpisodes = args.numEpisodes
         self.numItersForTrainExamplesHistory = args.numItersForTrainExamplesHistory
         self.arenaCompare = args.arenaCompare
 
@@ -93,7 +93,7 @@ class Coach():
         only if it wins >= updateThreshold fraction of games.
         """
 
-        for i in range(1, self.numIters + 1):
+        for i in range(1, self.numIterations + 1):
 
             # bookkeeping
             print('------ITER ' + str(i) + '------')
@@ -103,10 +103,10 @@ class Coach():
                 iterationTrainExamples = deque([], maxlen=self.maxlenOfQueue)
 
                 eps_time = AverageMeter()
-                bar = Bar('Self Play', max=self.numEps)
+                bar = Bar('Self Play', max=self.numEpisodes)
                 end = time.time()
 
-                for eps in range(self.numEps):
+                for eps in range(self.numEpisodes):
                     self.mcts = MCTS(self.game, self.nnet, self.args)  # reset search tree
                     iterationTrainExamples += self.executeEpisode()
 
@@ -114,7 +114,7 @@ class Coach():
                     eps_time.update(time.time() - end)
                     end = time.time()
                     bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
-                        eps=eps + 1, maxeps=self.numEps, et=eps_time.avg,
+                        eps=eps + 1, maxeps=self.numEpisodes, et=eps_time.avg,
                         total=bar.elapsed_td, eta=bar.eta_td)
                     bar.next()
                 bar.finish()

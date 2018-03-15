@@ -25,7 +25,7 @@ class TicTacToeNNet():
         action_size = self.action_size
 
         # 'learning_rate': 0.001,
-        learning_rate = self.args.lr
+        learning_rate = self.args.learningRate
 
         # 'dropout': 0.3,
         dropout = self.args.dropout
