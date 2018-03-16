@@ -1,32 +1,27 @@
 import numpy as np
 from colorama import Fore, Style
 
-from quatro.QuatroBoard import QuatroBoard
+from quatro.QuatroBoard import QuatroBoard, Piece
 
 
-def display(board_state: np.array):
+def display(board_state: np.ndarray):
     n = board_state.shape[0]
     board = QuatroBoard(n, board_state=board_state)
 
     piece_to_deploy = board.selected_piece
     # piece_to_deploy = piece_to_deploy - (1 << (n))
 
-
     if len(board.empty_tiles) > 0:
         print("Piece to deploy: ")
-        piece_bit4 = bit(piece_to_deploy,3)
-        print(Fore.BLUE+'{0:01b}'.format(piece_bit4), end="")
+        print(Fore.BLUE + '{0:01b}'.format(piece_to_deploy[0]), end="")
 
-        piece_bit3 = bit(piece_to_deploy,2)
-        print(Fore.BLUE+'{0:01b}'.format(piece_bit3), end="")
+        print(Fore.BLUE + '{0:01b}'.format(piece_to_deploy[1]), end="")
         print(Style.RESET_ALL, end="")
         print("")
 
-        piece_bit2 = bit(piece_to_deploy,1)
-        print(Fore.BLUE+'{0:01b}'.format(piece_bit2), end="")
+        print(Fore.BLUE + '{0:01b}'.format(piece_to_deploy[2]), end="")
 
-        piece_bit1 = bit(piece_to_deploy,0)
-        print(Fore.BLUE+'{0:01b}'.format(piece_bit1), end="")
+        print(Fore.BLUE + '{0:01b}'.format(piece_to_deploy[3]), end="")
         print(Style.RESET_ALL, end="")
         print("")
 
@@ -57,10 +52,10 @@ def display(board_state: np.array):
             print(x-1, "|", end="")  # print the row #
         for y in range(n):
             if y == mid: continue
-            piece = board[x][y]  # get the piece to print
-            if piece != 0:
-                print('{0:01b}'.format(bit(piece, 3)), end="")
-                print('{0:01b}'.format(bit(piece, 2)), end="")
+            piece = Piece(board[x][y])  # get the piece to print
+            if piece is not None:
+                print('{0:01b}'.format(piece[0]), end="")
+                print('{0:01b}'.format(piece[0]), end="")
             else:
                 print("  ", end="")
             if y != n-1:
@@ -70,10 +65,10 @@ def display(board_state: np.array):
         print("  |", end="")
         for y in range(n):
             if y == mid: continue
-            piece = board[x][y]  # get the piece to print
-            if piece != 0:
-                print('{0:01b}'.format(bit(piece,1)), end="")
-                print('{0:01b}'.format(bit(piece,0)), end="")
+            piece = Piece(board[x][y])  # get the piece to print
+            if piece is not None:
+                print('{0:01b}'.format(piece[2]), end="")
+                print('{0:01b}'.format(piece[3]), end="")
             else:
                 print("  ", end="")
             if y != n-1:
@@ -97,13 +92,7 @@ def display(board_state: np.array):
     print("-")
 
     print("Remaining pieces: ",end="")
-    print(list(map(lambda piece: '{0:04b}'.format(piece & board.property_mask),board.remaining_pieces)))
+    print(str(board.remaining_pieces))
 
-
-def bit(piece_to_deploy, bit_place: int):
-
-    mask = (1 << bit_place)
-    i = (piece_to_deploy & mask)
-    return i >> bit_place
 
 

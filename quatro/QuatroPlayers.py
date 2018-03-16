@@ -5,7 +5,7 @@ import numpy as np
 from .QuatroGame import QuatroGame
 from alpha_zero.Player import Player
 from alpha_zero.MCTS import MCTS
-from .QuatroBoard import QuatroBoard
+from .QuatroBoard import QuatroBoard, Piece
 from .quatro_keras.NNet import NNetWrapper as KerasNNet
 
 
@@ -31,22 +31,21 @@ class RandomPlayer(Player):
             a = np.random.randint(self.game.getActionSize())
 
         display_action=human_decode(self.game, a)
-        print(f"{self.name} place {(board.selected_piece & self.game.property_mask):04b} in '{display_action[1]} {display_action[0]}' and gives you {display_action[2]:04b}")
+        print(f"{self.name} placed {board.selected_piece} in '{display_action[1]} {display_action[0]}' and gives you {display_action[2]}")
 
         return a
 
 
-def human_decode(game: QuatroGame, encoded_action: int)->Tuple[int,chr,str]:
+def human_decode(game: QuatroGame, encoded_action: int)->Tuple[int,chr,Piece]:
     mid = (game.n - 1) / 2
 
-    x,y,p = game.decodeAction(encoded_action)
+    x,y,piece = game.decodeAction(encoded_action)
     if x >= mid:
         x -= 1
     if y >= mid:
         y -= 1
     y = chr(ord('a') + y)
-    return x,y,p & game.property_mask
-
+    return x, y, piece
 
 
 class HumanPlayer(Player):
@@ -54,8 +53,8 @@ class HumanPlayer(Player):
         super().__init__(name)
         self.game = game
 
-    def play(self, board: QuatroBoard):
-        valid = self.game.getValidMoves(board, 1)
+    def play(self, board_state: np.ndarray):
+        valid = self.game.getValidMoves(board_state, 1)
         mid = (self.game.n -1) / 2
         while True:
 
@@ -76,7 +75,7 @@ class HumanPlayer(Player):
                 y += 1
             print(f"effective y={y}")
 
-            piece = int(coordinates[2], 2)
+            piece = Piece.fromNP(int(coordinates[2], 2))
 
             a = self.game.encodeAction((y, x, piece)) if x != -1 else self.game.n ** 2
             if valid[a]:

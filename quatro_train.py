@@ -18,13 +18,13 @@ def args_to_filename(args: dict):
 
 
 model_params = {
-    'numIters': 100,
-    'numEps': 10,
+    'numIterations': 5,
+    'numEpisodes': 25,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
     'numMCTSSims': 25,
-    'arenaCompare': 40,
+    'arenaCompare': 20,
     'cpuct': 1,
 }
 

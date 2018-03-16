@@ -63,9 +63,11 @@ class KerasNeuralNetPlayer(Player):
         # nnet players
         super().__init__(name)
         self.game = game
-        neural_net_1 = KerasNNet(game)
-        self.mcts1 = MCTS(game, neural_net_1, args1)
-        # n1.load_checkpoint('./pretrained_models/tictactoe/keras/','best-25eps-25sim-10epch.pth.tar')
+        self.neural_net_1 = KerasNNet(game)
+        self.mcts1 = MCTS(game, self.neural_net_1, args1)
+
+    def load_brain(self, folder:str, file:str):
+        self.neural_net_1.load_checkpoint('./pretrained_models/tictactoe/keras/','best-25eps-25sim-10epch.pth.tar')
 
     def play(self, board: Board):
         return np.argmax(self.mcts1.getActionProb(board, temperature=0))

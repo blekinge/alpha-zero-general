@@ -18,7 +18,7 @@ Based on (copy-pasted from) the NNet by SourKream and Surag Nair.
 """
 
 args = dotdict({
-    'lr': 0.001,
+    'learningRate': 0.001,
     'dropout': 0.3,
     'epochs': 10,
     'batch_size': 64,
@@ -45,7 +45,7 @@ class NNetWrapper(NeuralNet):
                             batch_size = args.batch_size,
                             epochs = args.epochs)
 
-    def predict(self, board_state:np.array):
+    def predict(self, board_state:np.ndarray):
         """
         board: np array with board
         """

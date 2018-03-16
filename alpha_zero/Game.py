@@ -86,7 +86,7 @@ class Game():
         """
         pass
 
-    def getSymmetries(self, board: Board, pi):
+    def getSymmetries(self, board, pi):
         """
 
         :param board: current board

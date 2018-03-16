@@ -7,7 +7,7 @@ from alpha_zero.Player import Player
 from alpha_zero.Game import Game
 
 sys.path.append('..')
-from .QuatroBoard import QuatroBoard
+from .QuatroBoard import QuatroBoard, Piece
 import numpy as np
 
 from colorama import init
@@ -32,8 +32,6 @@ class QuatroGame(Game):
     def getInitBoard(self) -> np.array:
         # return initial board (numpy board)
         b = QuatroBoard(self.n)
-        self.property_mask = b.property_mask
-        self.is_set_mask = b.is_set_mask
         return b.state
 
     def getBoardSize(self) -> Tuple[int, int]:
@@ -45,7 +43,7 @@ class QuatroGame(Game):
         # TODO in terms of n
         return (1 << (2 + 2 + self.n-1)) + 1
 
-    def getNextState(self, board_state: np.array, player: int, action: int) -> Tuple[np.array, int]:
+    def getNextState(self, board_state: np.ndarray, player: int, action: int) -> Tuple[np.ndarray, int]:
         """
         if player takes action on board, return next (board_state,player)
         :param board_state: current board state
@@ -81,7 +79,7 @@ class QuatroGame(Game):
 
 
     # This returns array of the actions that are fed into getNextState
-    def getValidMoves(self, board_state: np.array, player: int):
+    def getValidMoves(self, board_state: np.ndarray, player: int):
         # return a fixed size binary vector
         valids = [0] * self.getActionSize()
 
@@ -102,7 +100,7 @@ class QuatroGame(Game):
         return valids
 
 
-    def getGameEnded(self, board_state: np.array, player: int) -> int:
+    def getGameEnded(self, board_state: np.ndarray, player: int) -> int:
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         board = QuatroBoard(self.n, board_state)
@@ -114,16 +112,16 @@ class QuatroGame(Game):
         # draw has a very little value 
         return 1e-4
 
-    def getCanonicalForm(self, board_state: np.array, player: int):
+    def getCanonicalForm(self, board_state: np.ndarray, player: int) -> np.ndarray:
         # return state if player==1, else return -state if player==-1
         return board_state
 
-    def getSymmetries(self, board_state: np.array, pi: List[float]):
-        # mirror, rotational
-        assert (len(pi) == self.getActionSize())  # 1 for pass
-        pi_board = np.reshape(pi[:-1], ((self.n-1) ** 2, (self.n-1) ** 2))
-        l = []
+    def getSymmetries(self, board_state: np.array, action_prop_vector: List[float]):
+        assert (len(action_prop_vector) == self.getActionSize())  # 1 for pass
+        pi_board = np.reshape(action_prop_vector[:-1], ((self.n - 1) ** 2, (self.n - 1) ** 2))
+        symmetrics = []
 
+        # mirror, rotational
         for i in range(1, 5):
             for j in [True, False]:
                 newB = np.rot90(board_state, i)
@@ -131,31 +129,33 @@ class QuatroGame(Game):
                 if+ j:
                     newB = np.fliplr(newB)
                     newPi = np.fliplr(newPi)
-                l += [(newB, list(newPi.ravel()) + [pi[-1]])]
-        return l
+
+
+                symmetrics += [(newB, list(newPi.ravel()) + [action_prop_vector[-1]])]
+
+        return symmetrics
 
     def stringRepresentation(self, board_state: np.array):
         return board_state.tostring()
 
-    def encodeAction(self, action: Tuple[int, int, int]) -> int:
-        x, y, p = action
-        # x,y is 0-3, so 2 bits.
-        # p is 5 bits
-        # p = p - 0b10000
+    def encodeAction(self, action: Tuple[int, int, Piece]) -> int:
+        x, y, piece = action
+
         if x > 1: x -= 1
         if y > 1: y -= 1
 
-        n_x = (x & 0b11) << (self.n-1 + 2)
-        n_y = (y & 0b11) << (self.n-1)
-        return n_x + n_y + (p & self.property_mask)
+        moveMask = self.n - 2
+        n_x = (x & moveMask) << (self.n-1 + 2)
+        n_y = (y & moveMask) << (self.n-1)
+        return n_x + n_y + (piece.toInt())
 
-    def decodeAction(self, encoded_action: int) -> Tuple[int, int, int]:
+    def decodeAction(self, encoded_action: int) -> Tuple[int, int, Piece]:
 
+        propertyMask = (self.n -1)**2 -1
 
         x = (encoded_action >> (self.n-1 + 2)) & 0b11
         if x > 1: x +=1
         y = (encoded_action >> (self.n-1)) & 0b11
         if y > 1: y += 1
-        piece = (encoded_action & self.property_mask) + self.is_set_mask
-
+        piece = Piece.fromInt(encoded_action & propertyMask)
         return x, y, piece
